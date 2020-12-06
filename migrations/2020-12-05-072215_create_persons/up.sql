@@ -1,0 +1,6 @@
+CREATE TABLE persons (
+  id INTEGER NOT NULL PRIMARY KEY,
+  first_name VARCHAR NOT NULL,
+  last_name VARCHAR NOT NULL,
+  nickname VARCHAR NOT NULL
+);
