@@ -113,8 +113,8 @@ pub async fn list_attendances(pool: web::Data<DbPool>, query: web::Query<ListAtt
     let connection = pool.get().expect("Failed to get database connection from pool");
 
     // validate date
-    let date = query.date.clone();
-    if date.is_some() && validate_date(date.unwrap()) {
+    let date = &query.date;
+    if date.is_some() && validate_date(&date.as_ref().unwrap()) {
         return Ok(HttpResponse::BadRequest().json(ErrorResponse::from("Date must be of the form YYYY-MM-DD".to_owned())));
     }
 
@@ -133,7 +133,7 @@ pub async fn upsert_attendance(pool: web::Data<DbPool>, web::Path((date, person_
     let connection = pool.get().expect("Failed to get database connection from pool");
 
     // validate date
-    if validate_date(date.clone()) {
+    if validate_date(&date) {
         return Ok(HttpResponse::BadRequest().json(ErrorResponse::from("Date must be of the form YYYY-MM-DD".to_owned())));
     }
 
@@ -150,6 +150,6 @@ pub async fn upsert_attendance(pool: web::Data<DbPool>, web::Path((date, person_
     Ok(HttpResponse::Ok().json(result))
 }
 
-fn validate_date(date: String) -> bool {
+fn validate_date(date: &String) -> bool {
     return NaiveDate::parse_from_str(date.as_str(), "%Y-%m-%d").is_err()
 }
