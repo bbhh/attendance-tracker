@@ -11,6 +11,8 @@ pub fn list_persons(connection: &SqliteConnection) -> Result<Vec<Person>, diesel
     use crate::schema::persons::dsl::*;
 
     let results = persons
+        .order_by(last_name.asc())
+        .then_order_by(first_name.asc())
         .load::<Person>(connection)?;
 
     Ok(results)
