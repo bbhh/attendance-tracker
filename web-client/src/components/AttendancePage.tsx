@@ -145,7 +145,6 @@ function AttendancePage() {
               <ListItemIcon>
                 <Checkbox
                   edge="start"
-                  /*checked={checked.indexOf(id) !== -1}*/
                   checked={attendance.has(id)}
                   tabIndex={-1}
                   disableRipple

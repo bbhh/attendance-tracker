@@ -72,7 +72,7 @@ async fn main() -> io::Result<()> {
                     .service(handlers::upsert_attendance)
             )
 
-            .service(fs::Files::new("/static", "static/"))
+            .service(fs::Files::new("/", "static").index_file("index.html"))
     })
         .bind(format!("{}:{}", server_host, server_port))?
         .run()
