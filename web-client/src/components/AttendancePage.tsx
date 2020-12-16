@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { AppBar, Button, ButtonGroup, Checkbox, fade, InputBase, List, ListItem, ListItemIcon, ListItemText, makeStyles, Menu, MenuItem, Theme, Toolbar, Typography } from '@material-ui/core';
+import { AppBar, Badge, Box, Button, ButtonGroup, Checkbox, fade, InputBase, List, ListItem, ListItemIcon, ListItemText, makeStyles, Menu, MenuItem, Theme, Toolbar, Typography } from '@material-ui/core';
 import Alert from '@material-ui/lab/Alert';
-import { ChevronLeft, ChevronRight, MoreVert, Search, Today } from '@material-ui/icons';
+import { CheckBox, CheckBoxOutlineBlank, ChevronLeft, ChevronRight, MoreVert, Search, Today } from '@material-ui/icons';
 import axios from 'axios';
 
 import { Person, renderPerson } from '../models/Person';
@@ -17,11 +17,11 @@ const useStyles = makeStyles((theme: Theme) =>
     flexGrow: 1,
     marginRight: theme.spacing(2),
   },
+  badge: {
+    marginRight: theme.spacing(2),
+  },
   menuText: {
     marginLeft: theme.spacing(1),
-  },
-  body: {
-    marginBottom: '56px',
   },
   search: {
     position: 'relative',
@@ -60,6 +60,9 @@ const useStyles = makeStyles((theme: Theme) =>
       width: '20ch',
     },
   },
+  body: {
+    marginBottom: '56px',
+  },
 }));
 
 function formatShortDate(date: Date): string {
@@ -84,6 +87,7 @@ function AttendancePage() {
   const [date, setDate] = useState(getCurrentSunday());
   const [filter, setFilter] = useState('');
   const [persons, setPersons] = useState([]);
+  const [present, setPresent] = useState(0);
   const [attendance, setAttendance] = useState(new Set());
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -125,6 +129,7 @@ function AttendancePage() {
           newAttendance.add(person_id);
         });
         setAttendance(newAttendance);
+        setPresent(newAttendance.size);
       } catch (error) {
         if (error.response) {
           setErrorMessage(error.response.data.error);
@@ -160,19 +165,20 @@ function AttendancePage() {
   };
 
   const handleToggle = (personId: number) => () => {
-    let present = false;
+    let isPresent = false;
     const newAttendance = new Set(attendance);
     if (newAttendance.has(personId)) {
       newAttendance.delete(personId);
     }
     else {
       newAttendance.add(personId);
-      present = true;
+      isPresent = true;
     }
     setAttendance(newAttendance);
+    setPresent(isPresent ? present + 1 : present - 1);
     
     // update in backend
-    updateAttendance(personId, present);
+    updateAttendance(personId, isPresent);
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -205,6 +211,14 @@ function AttendancePage() {
               onChange={handleSearchChange}
             />
           </div>
+          <Box display="flex">
+            <Badge badgeContent={present} color="error" max={1000} className={classes.badge}>
+              <CheckBox />
+            </Badge>
+            <Badge badgeContent={persons.length - present} color="secondary" max={1000} className={classes.badge}>
+              <CheckBoxOutlineBlank />
+            </Badge>
+          </Box>
           <ButtonGroup variant="text">
             <Button color="inherit" onClick={handleShowMoreMenu}><MoreVert /></Button>
           </ButtonGroup>
