@@ -13,6 +13,7 @@ pub fn list_persons(connection: &SqliteConnection) -> Result<Vec<Person>, diesel
     let results = persons
         .order_by(last_name.asc())
         .then_order_by(first_name.asc())
+        .then_order_by(nickname.asc())
         .load::<Person>(connection)?;
 
     Ok(results)
