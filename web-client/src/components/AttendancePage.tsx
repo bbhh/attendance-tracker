@@ -6,6 +6,7 @@ import axios from 'axios';
 
 import { Person, renderPerson } from '../models/Person';
 import { Attendance } from '../models/Attendance';
+import { formatIsoDate, formatShortDate, getCurrentSunday, jumpDate } from '../utils/Functions';
 import Constants from '../utils/Constants';
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -65,22 +66,6 @@ const useStyles = makeStyles((theme: Theme) =>
   },
 }));
 
-function formatShortDate(date: Date): string {
-  return new Intl.DateTimeFormat('en-US', { year: '2-digit', month: 'numeric', day: 'numeric' }).format(date);
-}
-
-function formatIsoDate(date: Date): string {
-  return new Intl.DateTimeFormat('fr-CA', { year: 'numeric', month: '2-digit', day: '2-digit' }).format(date);
-}
-
-// if today is Sunday, return today; otherwise, return previous Sunday
-function getCurrentSunday(): Date {
-  const today = new Date();
-  const sunday = new Date();
-  sunday.setDate(today.getDate() - today.getDay());
-  return sunday;
-}
-
 function AttendancePage() {
   const classes = useStyles();
 
@@ -105,7 +90,7 @@ function AttendancePage() {
     const fetch = async () => {
       console.log('Retrieving persons...');
       try {
-        const result = await axios.get(`${Constants.API_BASE_URL}/persons`);
+        const result = await axios.get(`${Constants.API_BASE_URL}/persons?include_history=false`);
         setPersons(result.data);
       } catch (error) {
         if (error.response) {
@@ -146,8 +131,7 @@ function AttendancePage() {
   };
 
   const handleStepDayClick = (delta: number) => {
-    const newDate = new Date(date);
-    newDate.setDate(date.getDate() + delta);
+    const newDate = jumpDate(date, delta);
     setDate(newDate);
     handleCloseMoreMenu();
   };

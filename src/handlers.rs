@@ -1,6 +1,6 @@
 use actix_web::{HttpResponse, web, Error};
 
-use crate::models::{AddPersonRequest, ListAttendancesRequest, UpsertAttendanceRequest};
+use crate::models::{AddPersonRequest, ListAttendancesRequest, UpsertAttendanceRequest, ListPersonsRequest};
 use crate::{DbPool, actions};
 use crate::responses::ErrorResponse;
 use chrono::NaiveDate;
@@ -10,17 +10,28 @@ use chrono::NaiveDate;
 /***********/
 
 #[get("/persons")]
-pub async fn list_persons(pool: web::Data<DbPool>) -> Result<HttpResponse, Error> {
+pub async fn list_persons(pool: web::Data<DbPool>, query: web::Query<ListPersonsRequest>) -> Result<HttpResponse, Error> {
     let connection = pool.get().expect("Failed to get database connection from pool");
 
-    let persons = web::block(move || actions::list_persons(&connection))
-        .await
-        .map_err(|e| {
-            eprintln!("{}", e);
-            HttpResponse::InternalServerError().finish()
-        })?;
+    if query.include_history {
+        let persons = web::block(move || actions::list_persons_with_history(&connection))
+            .await
+            .map_err(|e| {
+                eprintln!("{}", e);
+                HttpResponse::InternalServerError().finish()
+            })?;
 
-    Ok(HttpResponse::Ok().json(persons))
+        Ok(HttpResponse::Ok().json(persons))
+    } else {
+        let persons = web::block(move || actions::list_persons(&connection))
+            .await
+            .map_err(|e| {
+                eprintln!("{}", e);
+                HttpResponse::InternalServerError().finish()
+            })?;
+
+        Ok(HttpResponse::Ok().json(persons))
+    }
 }
 
 #[post("/persons")]

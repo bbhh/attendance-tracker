@@ -1,7 +1,9 @@
 use diesel::prelude::*;
 use diesel::{SqliteConnection, RunQueryDsl};
 
-use crate::models::{Person, NewPerson, Attendance, NewAttendance};
+use crate::models::{Person, NewPerson, Attendance, NewAttendance, AttendanceHistory};
+use std::collections::HashMap;
+use std::collections::hash_map::Entry;
 
 /***********/
 /* PERSONS */
@@ -76,6 +78,36 @@ pub fn delete_person(connection: &SqliteConnection, id_: i32) -> Result<usize, d
 
     // TODO: return error if none deleted
     Ok(num_deleted)
+}
+
+pub fn list_persons_with_history(connection: &SqliteConnection) -> Result<Vec<AttendanceHistory>, diesel::result::Error> {
+    use crate::schema::persons::dsl::*;
+    use crate::schema::attendances::dsl::*;
+
+    let person_results: Vec<Person> = persons
+        .order_by(last_name.asc())
+        .then_order_by(first_name.asc())
+        .then_order_by(nickname.asc())
+        .load::<Person>(connection)?;
+
+    let mut attendance_histories = HashMap::new();
+    let attendance_results = attendances.load::<Attendance>(connection)?;
+    for attendance in attendance_results {
+        match attendance_histories.entry(attendance.person_id) {
+            Entry::Vacant(e) => { e.insert(vec![attendance.date]); },
+            Entry::Occupied(mut e) => { e.get_mut().push(attendance.date); }
+        }
+    }
+
+    let mut results = Vec::new();
+    for person in person_results {
+        results.push(AttendanceHistory {
+            person: person.clone(),
+            attendances: attendance_histories.get(&person.id).unwrap_or(Vec::new().as_ref()).clone()
+        });
+    }
+
+    Ok(results)
 }
 
 /***************/

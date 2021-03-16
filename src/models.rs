@@ -1,6 +1,11 @@
 use serde::{Deserialize, Serialize};
 use super::schema::{persons, attendances};
 
+#[derive(Deserialize)]
+pub struct ListPersonsRequest {
+    pub include_history: bool,
+}
+
 #[derive(Debug, Clone, Serialize, Queryable)]
 pub struct Person {
     pub id: i32,
@@ -47,4 +52,10 @@ pub struct Attendance {
 pub struct NewAttendance {
     pub person_id: i32,
     pub date: String,
+}
+
+#[derive(Debug, Clone, Serialize, Queryable)]
+pub struct AttendanceHistory {
+    pub person: Person,
+    pub attendances: Vec<String>,
 }
