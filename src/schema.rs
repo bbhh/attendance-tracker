@@ -1,4 +1,6 @@
-table! {
+// @generated automatically by Diesel CLI.
+
+diesel::table! {
     attendances (id) {
         id -> Integer,
         person_id -> Integer,
@@ -6,7 +8,7 @@ table! {
     }
 }
 
-table! {
+diesel::table! {
     persons (id) {
         id -> Integer,
         first_name -> Text,
@@ -15,9 +17,9 @@ table! {
     }
 }
 
-joinable!(attendances -> persons (person_id));
+diesel::joinable!(attendances -> persons (person_id));
 
-allow_tables_to_appear_in_same_query!(
+diesel::allow_tables_to_appear_in_same_query!(
     attendances,
     persons,
 );

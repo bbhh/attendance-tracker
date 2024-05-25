@@ -92,7 +92,7 @@ function AttendancePage() {
       try {
         const result = await axios.get(`${Constants.API_BASE_URL}/persons?include_history=false`);
         setPersons(result.data);
-      } catch (error) {
+      } catch (error: any) {
         if (error.response) {
           setErrorMessage(error.response.data.error);
         }
@@ -115,7 +115,7 @@ function AttendancePage() {
         });
         setAttendance(newAttendance);
         setPresent(newAttendance.size);
-      } catch (error) {
+      } catch (error: any) {
         if (error.response) {
           setErrorMessage(error.response.data.error);
         }
@@ -141,7 +141,7 @@ function AttendancePage() {
     try {
       const shortDate = formatIsoDate(date);
       await axios.put(`${Constants.API_BASE_URL}/attendances/${shortDate}/${personId}`, { present });
-    } catch (error) {
+    } catch (error: any) {
       if (error.response) {
         setErrorMessage(error.response.data.error);
       }

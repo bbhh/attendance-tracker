@@ -4,6 +4,7 @@ use diesel::{SqliteConnection, RunQueryDsl};
 use crate::models::{Person, NewPerson, Attendance, NewAttendance, AttendanceHistory};
 use std::collections::HashMap;
 use std::collections::hash_map::Entry;
+use chrono::{Duration, NaiveDate, Utc};
 
 /***********/
 /* PERSONS */
@@ -90,12 +91,24 @@ pub fn list_persons_with_history(connection: &SqliteConnection) -> Result<Vec<At
         .then_order_by(nickname.asc())
         .load::<Person>(connection)?;
 
+    let now = Utc::now();
+    let start_date = now - Duration::days(365);
+    let start_date_naive = start_date.naive_utc();
+    let date_format = "%Y-%m-%d";
+
     let mut attendance_histories = HashMap::new();
     let attendance_results = attendances.load::<Attendance>(connection)?;
     for attendance in attendance_results {
-        match attendance_histories.entry(attendance.person_id) {
-            Entry::Vacant(e) => { e.insert(vec![attendance.date]); },
-            Entry::Occupied(mut e) => { e.get_mut().push(attendance.date); }
+        let attendance_date_naive_result = NaiveDate::parse_from_str(&attendance.date, date_format);
+        if let Ok(attendance_date_naive) = attendance_date_naive_result {
+            if start_date_naive > attendance_date_naive.into() {
+                continue;
+            }
+
+            match attendance_histories.entry(attendance.person_id) {
+                Entry::Vacant(e) => { e.insert(vec![attendance.date]); },
+                Entry::Occupied(mut e) => { e.get_mut().push(attendance.date); }
+            }
         }
     }
 

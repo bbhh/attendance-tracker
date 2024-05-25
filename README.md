@@ -18,3 +18,15 @@
    ```shell
    $ cargo build --release
    ```
+
+## Populate Static Files
+
+```
+$ cd web-client && npm run build && cd .. && cp -r web-client/build/* static
+```
+
+## Run Server
+
+```
+$ target/release/attendance-tracker
+```
